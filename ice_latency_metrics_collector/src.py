@@ -1,6 +1,6 @@
 from typing import Optional, Callable, Union, Dict, Any
 import inspect
-import logging.config
+import logging
 from functools import wraps
 import time
 
@@ -11,6 +11,8 @@ MAX_RETRY_ATTEMPTS_COUNT = 3
 RETRY_INTERVAL_IN_SECONDS = 2
 MILLISECONDS_IN_SECOND = 1000.0
 
+logger = logging.getLogger('ice_latency_metrics_collector')
+
 
 def predicate(obj):
     return inspect.isfunction(obj) and not (obj.__name__.startswith('ice_') or
@@ -18,7 +20,6 @@ def predicate(obj):
 
 
 def get_statsd_client(**config: Union[str, int]) -> Optional[StatsClient]:
-    logger = logging.getLogger(__name__)
     for i in range(MAX_RETRY_ATTEMPTS_COUNT):
         try:
             return StatsClient(**config)
@@ -44,7 +45,6 @@ def with_latency_metrics(cls, statsd_config: Dict[str, Any]):
 
         return wrapped
 
-    logger = logging.getLogger(__name__)
     prefix = cls.__name__
     logger.info(f'Enable latency collection for service "{prefix}"')
 
@@ -64,15 +64,11 @@ def with_latency_metrics(cls, statsd_config: Dict[str, Any]):
 
 def latency_metrics_factory(*,
                             enabled: bool,
-                            config: Dict[str, Any] = None,
-                            logging_conf_path: str = None) -> Callable:
+                            config: Dict[str, Any] = None) -> Callable:
     def decorator(cls):
         if enabled:
             return with_latency_metrics(cls, config)
         else:
             return cls
-
-    if logging_conf_path:
-        logging.config.fileConfig(logging_conf_path)
 
     return decorator
