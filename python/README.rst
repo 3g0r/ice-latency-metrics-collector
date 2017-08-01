@@ -1,6 +1,3 @@
-ZerocIce latency metrics collector
-==================================
-
 Simple Example
 ^^^^^^^^^^^^^^
 
@@ -42,8 +39,8 @@ Logging configuration
 
 You need to apply standard python logging configuration before decorator usage.
 
-Disable or enable
-^^^^^^^^^^^^^^^^^
+Disable or enable example
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Example with env
 

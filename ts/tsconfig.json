@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES6",
+    "lib": ["es2015", "es2015.iterable", "es2017.object", "es2016.array.include"],
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "outDir": "lib",
+    "declaration": true
+  },
+  "include": [
+    "src/*.ts"
+  ]
+}

@@ -1,9 +1,1 @@
-*.pyc
-*.egg-info
-build
-dist
-.tox
-.coverage
-*.swp
 .idea
-docs/_build
