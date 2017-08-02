@@ -103,11 +103,72 @@ export const getClient = (() => {
   };
 })();
 
+export interface Prototype {
+  constructor: {
+    name: string;
+  };
+}
+
+export type F0<R> = () => R;
+export type F1<P, R> = (p: P) => R;
+export type F2<P, P1, R> = (p: P, p1: P1) => R;
+export type F3<P, P1, P2, R> = (p: P, p1: P1, p2: P2) => R;
+export type F4<P, P1, P2, P3, R> = (p: P, p1: P1, p2: P2, p3: P3) => R;
+export type F5<P, P1, P2, P3, P4, R> =
+  (p: P, p1: P1, p2: P2, p3: P3, p4: P4) => R;
+export type F6<P, P1, P2, P3, P4, P5, R> =
+  (p: P, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5) => R;
+export type F7<P, P1, P2, P3, P4, P5, P6, R> =
+  (p: P, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6) => R;
+
+export interface ParametrizePropertyDescriptor<T> extends PropertyDescriptor {
+  value?: T;
+}
+
 export const operationWithLatencyMetrics = (
   configurator: StatsdConfigurator
 ) => {
-  function decorator(prototype: any, key: string,
-                     descriptor: PropertyDescriptor) {
+  function decorator<R>(
+    prototype: Prototype,
+    key: string,
+    descriptor: ParametrizePropertyDescriptor<F0<R>>
+  ): ParametrizePropertyDescriptor<F0<R>>;
+  function decorator<P, R>(
+    prototype: Prototype,
+    key: string,
+    descriptor: ParametrizePropertyDescriptor<F1<P, R>>
+  ): ParametrizePropertyDescriptor<F1<P, R>>;
+  function decorator<P, P1, R>(
+    prototype: Prototype,
+    key: string,
+    descriptor: ParametrizePropertyDescriptor<F2<P, P1, R>>
+  ): ParametrizePropertyDescriptor<F2<P, P1, R>>;
+  function decorator<P, P1, P2, R>(
+    prototype: Prototype,
+    key: string,
+    descriptor: ParametrizePropertyDescriptor<F3<P, P1, P2, R>>
+  ): ParametrizePropertyDescriptor<F3<P, P1, P2, R>>;
+  function decorator<P, P1, P2, P3, R>(
+    prototype: Prototype,
+    key: string,
+    descriptor: ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>
+  ): ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>;
+  function decorator<P, P1, P2, P3, P4, R>(
+    prototype: Prototype,
+    key: string,
+    descriptor: ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>
+  ): ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>;
+  function decorator<P, P1, P2, P3, P4, P5, R>(
+    prototype: Prototype,
+    key: string,
+    descriptor: ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>
+  ): ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>;
+  function decorator<P, P1, P2, P3, P4, P5, P6, R>(
+    prototype: Prototype,
+    key: string,
+    descriptor: ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>
+  ): ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>;
+  function decorator(prototype: any, key: any, descriptor: any) {
     const tag = `${prototype.constructor.name}.${key}`;
     const logger = configurator.getLogger
       ? configurator.getLogger()
@@ -121,13 +182,10 @@ export const operationWithLatencyMetrics = (
     if (key.endsWith('_async')) {
       return {
         ...descriptor,
-        value: function (callback: {
-                           ice_response: (...args: any[]) => any,
-                           ice_exception: (...args: any[]) => any
-                         },
-                         ...args: any[]): any {
+        value: function (...args: any[]): any {
+          const [callback, ...rest] = args;
           if (configurator.isStatsdEnabled() === false) {
-            return method.apply(this, [callback, ...args]);
+            return method.apply(this, args);
           }
           const timer = new Date();
           const {ice_response, ice_exception} = callback;
@@ -141,7 +199,7 @@ export const operationWithLatencyMetrics = (
             collectLatency([timer]);
             return result;
           };
-          return method.apply(this, [callback, ...args]);
+          return method.apply(this, [callback, ...rest]);
         },
       };
     } else {

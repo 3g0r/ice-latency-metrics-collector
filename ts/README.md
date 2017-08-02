@@ -193,6 +193,22 @@ interface StatsdConfigurator {
 function getClient(options: StatsdClientOptions): StatsdClient;
 ```
 ```typescript
+interface Prototype {
+    constructor: {
+        name: string;
+    };
+}
+type F0<R> = () => R;
+type F1<P, R> = (p: P) => R;
+type F2<P, P1, R> = (p: P, p1: P1) => R;
+type F3<P, P1, P2, R> = (p: P, p1: P1, p2: P2) => R;
+type F4<P, P1, P2, P3, R> = (p: P, p1: P1, p2: P2, p3: P3) => R;
+type F5<P, P1, P2, P3, P4, R> = (p: P, p1: P1, p2: P2, p3: P3, p4: P4) => R;
+type F6<P, P1, P2, P3, P4, P5, R> = (p: P, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5) => R;
+type F7<P, P1, P2, P3, P4, P5, P6, R> = (p: P, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6) => R;
+interface ParametrizePropertyDescriptor<T> extends PropertyDescriptor {
+    value?: T;
+}
 /**
  * Decorator for servant method
  * make a StatsdClient.timing(`ServantName.method`, timer) call after
@@ -200,16 +216,14 @@ function getClient(options: StatsdClientOptions): StatsdClient;
  */
 function operationWithLatencyMetrics(configurator: StatsdConfigurator):
   (prototype: any, key: string, descriptor: PropertyDescriptor) => {
-      value: (
-        callback: {
-            ice_response: (...args: any[]) => any;
-            ice_exception: (...args: any[]) => any;
-        },
-        ...args: any[],
-      ) => any;
-      configurable?: boolean | undefined;
-      enumerable?: boolean | undefined;
-      writable?: boolean | undefined;
+     <R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F0<R>>): ParametrizePropertyDescriptor<F0<R>>;
+     <P, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F1<P, R>>): ParametrizePropertyDescriptor<F1<P, R>>;
+     <P, P1, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F2<P, P1, R>>): ParametrizePropertyDescriptor<F2<P, P1, R>>;
+     <P, P1, P2, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F3<P, P1, P2, R>>): ParametrizePropertyDescriptor<F3<P, P1, P2, R>>;
+     <P, P1, P2, P3, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>): ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>;
+     <P, P1, P2, P3, P4, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>): ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>;
+     <P, P1, P2, P3, P4, P5, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>): ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>;
+     <P, P1, P2, P3, P4, P5, P6, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>): ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>;
   };
 ```
 ```typescript

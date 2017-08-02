@@ -1,6 +1,6 @@
 # ZerocIce latency metrics collector
 
-[python version](pyrhon/README.rst)
+[python version](python/README.rst)
 
 [node version](ts/README.md)
 
