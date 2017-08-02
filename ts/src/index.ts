@@ -126,99 +126,136 @@ export interface ParametrizePropertyDescriptor<T> extends PropertyDescriptor {
 }
 
 export const operationWithLatencyMetrics = (
-  configurator: StatsdConfigurator
+  configurator: StatsdConfigurator,
+  metric: string = '',
 ) => {
   function decorator<R>(
     prototype: Prototype,
-    key: string,
+    metric: string,
     descriptor: ParametrizePropertyDescriptor<F0<R>>
   ): ParametrizePropertyDescriptor<F0<R>>;
   function decorator<P, R>(
     prototype: Prototype,
-    key: string,
+    metric: string,
     descriptor: ParametrizePropertyDescriptor<F1<P, R>>
   ): ParametrizePropertyDescriptor<F1<P, R>>;
   function decorator<P, P1, R>(
     prototype: Prototype,
-    key: string,
+    metric: string,
     descriptor: ParametrizePropertyDescriptor<F2<P, P1, R>>
   ): ParametrizePropertyDescriptor<F2<P, P1, R>>;
   function decorator<P, P1, P2, R>(
     prototype: Prototype,
-    key: string,
+    metric: string,
     descriptor: ParametrizePropertyDescriptor<F3<P, P1, P2, R>>
   ): ParametrizePropertyDescriptor<F3<P, P1, P2, R>>;
   function decorator<P, P1, P2, P3, R>(
     prototype: Prototype,
-    key: string,
+    metric: string,
     descriptor: ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>
   ): ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>;
   function decorator<P, P1, P2, P3, P4, R>(
     prototype: Prototype,
-    key: string,
+    metric: string,
     descriptor: ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>
   ): ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>;
   function decorator<P, P1, P2, P3, P4, P5, R>(
     prototype: Prototype,
-    key: string,
+    metric: string,
     descriptor: ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>
   ): ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>;
   function decorator<P, P1, P2, P3, P4, P5, P6, R>(
     prototype: Prototype,
-    key: string,
+    metric: string,
     descriptor: ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>
   ): ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>;
-  function decorator(prototype: any, key: any, descriptor: any) {
-    const tag = `${prototype.constructor.name}.${key}`;
+  function decorator<R>(
+    target: F0<R>,
+  ): F0<R>;
+  function decorator<P, R>(
+    target: F1<P, R>,
+  ): F1<P, R>;
+  function decorator<P, P1, R>(
+    target: F2<P, P1, R>,
+  ): F2<P, P1, R>;
+  function decorator<P, P1, P2, R>(
+    target: F3<P, P1, P2, R>,
+  ): F3<P, P1, P2, R>;
+  function decorator<P, P1, P2, P3, R>(
+    target: F4<P, P1, P2, P3, R>,
+  ): F4<P, P1, P2, P3, R>;
+  function decorator<P, P1, P2, P3, P4, R>(
+    target: F5<P, P1, P2, P3, P4, R>,
+  ): F5<P, P1, P2, P3, P4, R>;
+  function decorator<P, P1, P2, P3, P4, P5, R>(
+    target: F6<P, P1, P2, P3, P4, P5, R>,
+  ): F6<P, P1, P2, P3, P4, P5, R>;
+  function decorator<P, P1, P2, P3, P4, P5, P6, R>(
+    target: F7<P, P1, P2, P3, P4, P5, P6, R>,
+  ): F7<P, P1, P2, P3, P4, P5, P6, R>;
+  function decorator(...args: any[]) {
+    const metricName = args.length === 3
+      ? `${args[0].constructor.name}.${args[1]}`
+      : metric;
+    const target = args.length === 3
+      ? args[2].value
+      : args[0];
+
+    if (typeof target !== 'function') {
+      throw new Error(
+        (args.length === 3
+        ? 'descriptor.value'
+        : 'target') + ` for '${metricName}' must be a function.`
+      );
+    }
+
     const logger = configurator.getLogger
       ? configurator.getLogger()
       : defaultLogger;
     const collectLatency = ([timer]: any[]) => {
-      logger.trace('Send timing to statsd', {tag, timer});
+      logger.trace('Send timing to statsd', {metricName, timer});
       getClient(configurator.getStatsdConfiguration())
-        .timing(tag, timer);
+        .timing(metricName, timer);
     };
-    const method: (...args: any[]) => any = descriptor.value;
-    if (key.endsWith('_async')) {
-      return {
-        ...descriptor,
-        value: function (...args: any[]): any {
-          const [callback, ...rest] = args;
-          if (configurator.isStatsdEnabled() === false) {
-            return method.apply(this, args);
-          }
-          const timer = new Date();
-          const {ice_response, ice_exception} = callback;
-          callback.ice_response = function (...args: any[]) {
-            const result = ice_response.apply(this, args);
-            collectLatency([timer]);
-            return result;
-          };
-          callback.ice_exception = function (...args: any[]) {
-            const result = ice_exception.apply(this, args);
-            collectLatency([timer]);
-            return result;
-          };
-          return method.apply(this, [callback, ...rest]);
-        },
+    let wrapped;
+    if (args.length === 3 && args[1].endsWith('_async')) {
+      wrapped = function (...args: any[]): any {
+        const [callback, ...rest] = args;
+        if (configurator.isStatsdEnabled() === false) {
+          return target.apply(this, args);
+        }
+        const timer = new Date();
+        const {ice_response, ice_exception} = callback;
+        callback.ice_response = function (...args: any[]) {
+          const result = ice_response.apply(this, args);
+          collectLatency([timer]);
+          return result;
+        };
+        callback.ice_exception = function (...args: any[]) {
+          const result = ice_exception.apply(this, args);
+          collectLatency([timer]);
+          return result;
+        };
+        return target.apply(this, [callback, ...rest]);
       };
     } else {
-      return {
-        ...descriptor,
-        value: function (...args: any[]): any {
-          if (configurator.isStatsdEnabled() === false) {
-            return method.apply(this, args);
-          }
-          const timer = new Date();
-          const result = method.apply(this, args);
-          Promise
-            .all([timer, result])
-            .then(collectLatency)
-            .catch(collectLatency);
-          return result;
-        },
+      wrapped = function (...args: any[]): any {
+        if (configurator.isStatsdEnabled() === false) {
+          return target.apply(this, args);
+        }
+        const timer = new Date();
+        const result = target.apply(this, args);
+        Promise
+          .all([timer, result])
+          .then(collectLatency)
+          .catch(collectLatency);
+        return result;
       };
     }
+
+    return args.length === 3
+      ? {...args[2], value: wrapped}
+      : wrapped;
   }
   return decorator;
 };

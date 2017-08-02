@@ -38,7 +38,12 @@ export const statsdConfigurator: StatsdConfigurator = {
 ### servant.ts
 ```typescript
 import {Ice} from "ice";
-import {getClient, StatsdClient} from "ice-latency-metrics-collector";
+import {
+  withLatencyMetrics,
+  servantWithLatencyMetrics,
+  getClient,
+  StatsdClient,
+} from "ice-latency-metrics-collector";
 
 import {SliceNamespace} from "./slices";
 import rootLogger from "./rootLogger";
@@ -47,9 +52,16 @@ import {statsdConfigurator} from "./statsdConfiguration";
 
 const logger = rootLogger.child({module: 'Service'}, true);
 
+@operationWithLatencyMetrics(statsdConfigurator, 'func')
+function funcWithLatencyCollector() {
+  /**
+  * some logic
+  */
+}
 
+@servantWithLatencyMetrics(statsdConfigurator)
 export default class Service extends SliceNamespace.Service {
-  @operation()
+  
   async getFun(current: Ice.Current): Promise<void> {
       /**
       * some logic
@@ -214,17 +226,24 @@ interface ParametrizePropertyDescriptor<T> extends PropertyDescriptor {
  * make a StatsdClient.timing(`ServantName.method`, timer) call after
  * original call of servant method be completed
  */
-function operationWithLatencyMetrics(configurator: StatsdConfigurator):
-  (prototype: any, key: string, descriptor: PropertyDescriptor) => {
-     <R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F0<R>>): ParametrizePropertyDescriptor<F0<R>>;
-     <P, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F1<P, R>>): ParametrizePropertyDescriptor<F1<P, R>>;
-     <P, P1, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F2<P, P1, R>>): ParametrizePropertyDescriptor<F2<P, P1, R>>;
-     <P, P1, P2, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F3<P, P1, P2, R>>): ParametrizePropertyDescriptor<F3<P, P1, P2, R>>;
-     <P, P1, P2, P3, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>): ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>;
-     <P, P1, P2, P3, P4, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>): ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>;
-     <P, P1, P2, P3, P4, P5, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>): ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>;
-     <P, P1, P2, P3, P4, P5, P6, R>(prototype: Prototype, key: string, descriptor: ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>): ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>;
-  };
+function operationWithLatencyMetrics(configurator: StatsdConfigurator, metric?: string): {
+       <R>(prototype: Prototype, metric: string, descriptor: ParametrizePropertyDescriptor<F0<R>>): ParametrizePropertyDescriptor<F0<R>>;
+       <P, R>(prototype: Prototype, metric: string, descriptor: ParametrizePropertyDescriptor<F1<P, R>>): ParametrizePropertyDescriptor<F1<P, R>>;
+       <P, P1, R>(prototype: Prototype, metric: string, descriptor: ParametrizePropertyDescriptor<F2<P, P1, R>>): ParametrizePropertyDescriptor<F2<P, P1, R>>;
+       <P, P1, P2, R>(prototype: Prototype, metric: string, descriptor: ParametrizePropertyDescriptor<F3<P, P1, P2, R>>): ParametrizePropertyDescriptor<F3<P, P1, P2, R>>;
+       <P, P1, P2, P3, R>(prototype: Prototype, metric: string, descriptor: ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>): ParametrizePropertyDescriptor<F4<P, P1, P2, P3, R>>;
+       <P, P1, P2, P3, P4, R>(prototype: Prototype, metric: string, descriptor: ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>): ParametrizePropertyDescriptor<F5<P, P1, P2, P3, P4, R>>;
+       <P, P1, P2, P3, P4, P5, R>(prototype: Prototype, metric: string, descriptor: ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>): ParametrizePropertyDescriptor<F6<P, P1, P2, P3, P4, P5, R>>;
+       <P, P1, P2, P3, P4, P5, P6, R>(prototype: Prototype, metric: string, descriptor: ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>): ParametrizePropertyDescriptor<F7<P, P1, P2, P3, P4, P5, P6, R>>;
+       <R>(target: F0<R>): F0<R>;
+       <P, R>(target: F1<P, R>): F1<P, R>;
+       <P, P1, R>(target: F2<P, P1, R>): F2<P, P1, R>;
+       <P, P1, P2, R>(target: F3<P, P1, P2, R>): F3<P, P1, P2, R>;
+       <P, P1, P2, P3, R>(target: F4<P, P1, P2, P3, R>): F4<P, P1, P2, P3, R>;
+       <P, P1, P2, P3, P4, R>(target: F5<P, P1, P2, P3, P4, R>): F5<P, P1, P2, P3, P4, R>;
+       <P, P1, P2, P3, P4, P5, R>(target: F6<P, P1, P2, P3, P4, P5, R>): F6<P, P1, P2, P3, P4, P5, R>;
+       <P, P1, P2, P3, P4, P5, P6, R>(target: F7<P, P1, P2, P3, P4, P5, P6, R>): F7<P, P1, P2, P3, P4, P5, P6, R>;
+   };
 ```
 ```typescript
 /**
