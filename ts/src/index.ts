@@ -47,17 +47,19 @@ function getOpTableFromInterfaces(interfaces: any[]) {
   return ops;
 }
 
+export interface Logger {
+  trace(...args: any[]): void;
+  debug(...args: any[]): void;
+  info(...args: any[]): void;
+  warn(...args: any[]): void;
+  error(...args: any[]): void;
+  fatal(...args: any[]): void;
+}
+
 export interface StatsdConfigurator {
   isStatsdEnabled(): boolean;
   getStatsdConfiguration(): StatsdClientOptions;
-  getLogger?: () => {
-    trace(...args: any[]): void;
-    debug(...args: any[]): void;
-    info(...args: any[]): void;
-    warn(...args: any[]): void;
-    error(...args: any[]): void;
-    fatal(...args: any[]): void;
-  };
+  getLogger?: () => Logger;
 }
 
 export const getClient = (() => {
@@ -201,27 +203,36 @@ export const operationWithLatencyMetrics = (
       ? args[2].value
       : args[0];
 
-    if (typeof target !== 'function') {
-      throw new Error(
-        (args.length === 3
-        ? 'descriptor.value'
-        : 'target') + ` for '${metricName}' must be a function.`
-      );
-    }
-
     const logger = configurator.getLogger
       ? configurator.getLogger()
       : defaultLogger;
+
+    if (typeof target !== 'function') {
+      const message = (args.length === 3
+          ? 'descriptor.value'
+          : 'target') + ` must be a function.`;
+      logger.error({metricName}, message);
+      throw new Error(message);
+    }
+
+    logger.trace({metricName}, 'Create latency collector');
+
     const collectLatency = ([timer]: any[]) => {
-      logger.trace('Send timing to statsd', {metricName, timer});
       getClient(configurator.getStatsdConfiguration())
         .timing(metricName, timer);
+      logger.trace({
+        metricName,
+        timer,
+        statsdConfiguration: configurator.getStatsdConfiguration(),
+      }, 'Send timing to statsd');
     };
     let wrapped;
     if (args.length === 3 && args[1].endsWith('_async')) {
       wrapped = function (...args: any[]): any {
+        logger.trace({metricName}, 'Started ICE async call');
         const [callback, ...rest] = args;
         if (configurator.isStatsdEnabled() === false) {
+          logger.trace({metricName}, 'Statsd disabled');
           return target.apply(this, args);
         }
         const timer = new Date();
@@ -240,7 +251,9 @@ export const operationWithLatencyMetrics = (
       };
     } else {
       wrapped = function (...args: any[]): any {
+        logger.trace({metricName}, 'Started');
         if (configurator.isStatsdEnabled() === false) {
+          logger.trace({metricName}, 'Statsd disabled');
           return target.apply(this, args);
         }
         const timer = new Date();
@@ -265,6 +278,10 @@ export const servantWithLatencyMetrics = (
 ) => {
   return function decorator<T>(target: T): T {
     const opDecorator = operationWithLatencyMetrics(configurator);
+    const logger = configurator.getLogger
+      ? configurator.getLogger()
+      : defaultLogger;
+
     let type: {new (): T};
     let prototype: Object;
     if (typeof target === 'function') {
@@ -275,12 +292,18 @@ export const servantWithLatencyMetrics = (
       prototype = Object.getPrototypeOf(target);
     }
 
+    console.log((logger as any).level());
+
     for (const methodName of {[Symbol.iterator]: getOpTable(type)}) {
+      logger.trace({methodName}, 'Found in operation table');
       const descriptor = Object.getOwnPropertyDescriptor(
         prototype,
         methodName,
       );
       if (descriptor === undefined) {
+        logger.trace(
+          {methodName, className: type.constructor.name},
+          'Not found in prototype');
         continue;
       }
       Object.defineProperty(
