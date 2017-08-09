@@ -292,8 +292,6 @@ export const servantWithLatencyMetrics = (
       prototype = Object.getPrototypeOf(target);
     }
 
-    console.log((logger as any).level());
-
     for (const methodName of {[Symbol.iterator]: getOpTable(type)}) {
       logger.trace({methodName}, 'Found in operation table');
       const descriptor = Object.getOwnPropertyDescriptor(
