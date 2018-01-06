@@ -7,7 +7,15 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "outDir": "lib",
-    "declaration": true
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "*",
+        "custom_typings/*"
+      ],
+      "ice": ["node_modules/typed-ice"]
+    }
   },
   "include": [
     "src/*.ts"

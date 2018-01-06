@@ -2,27 +2,15 @@
 # yarn lockfile v1
 
 
-"@types/lodash@^4.14.55":
-  version "4.14.71"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.71.tgz#0dc383f78981216ac76e2f2c3afd998e0450e4c1"
-
 "@types/node@*":
   version "8.0.16"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.16.tgz#5aa51abd72621a0ce53fb86bccd76825ee1b4ca9"
-
-"@types/statsd-client@^0.1.30":
-  version "0.1.30"
-  resolved "https://registry.yarnpkg.com/@types/statsd-client/-/statsd-client-0.1.30.tgz#e99d0da72bd4597dd314c958c9332d15c4281704"
 
 "@types/tape@^4.2.28":
   version "4.2.30"
   resolved "https://registry.yarnpkg.com/@types/tape/-/tape-4.2.30.tgz#3c1917c4dfd6f27271b9922772513515bc6c46b4"
   dependencies:
     "@types/node" "*"
-
-"@types/yamljs@^0.2.30":
-  version "0.2.30"
-  resolved "https://registry.yarnpkg.com/@types/yamljs/-/yamljs-0.2.30.tgz#d034e1d329e46e8d0f737c9a8db97f68f81b5382"
 
 ansi-regex@^2.0.0:
   version "2.1.1"
@@ -176,6 +164,10 @@ has@^1.0.1, has@~1.0.1:
   dependencies:
     function-bind "^1.0.2"
 
+ice@~3.7.0:
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/ice/-/ice-3.7.0.tgz#3f4c3c6cc35a7db8ce9071eabef06acf0367576c"
+
 inflight@^1.0.4:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/inflight/-/inflight-1.0.6.tgz#49bd6331d7d02d0c09bc910a1075ba8165b56df9"
@@ -240,10 +232,6 @@ mkdirp@^0.5.1:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
-
-node-statsd@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/node-statsd/-/node-statsd-0.1.1.tgz#27a59348763d0af7a037ac2a031fef3f051013d3"
 
 object-assign@^4.1.1:
   version "4.1.1"
@@ -412,9 +400,9 @@ tslint@^3.15.1:
     resolve "^1.1.7"
     underscore.string "^3.3.4"
 
-typed-ice@^3.6.1:
-  version "3.6.30"
-  resolved "https://registry.yarnpkg.com/typed-ice/-/typed-ice-3.6.30.tgz#13c129195cca24942ca990a7b1d74f9bafb43a5b"
+typed-ice@~3.7.1:
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/typed-ice/-/typed-ice-3.7.1.tgz#21e5826d6f5b3150ad965ff691185472a7450d70"
 
 typescript@^2.1.4:
   version "2.4.2"
