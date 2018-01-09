@@ -1,5 +1,5 @@
 import {defaultLogger} from "./logger";
-import {LatencyConfig} from "./functionWrapper";
+import {LatencyCollectorConfig} from "./functionWrapper";
 import {operationWithLatencyMetrics} from "./operationWrapper";
 
 function getOpTable(servantType: any) {
@@ -30,7 +30,7 @@ function getOpTableFromInterfaces(interfaces: any[]) {
 }
 
 export const servantWithLatencyMetrics = (
-  config: LatencyConfig,
+  config: LatencyCollectorConfig,
 ) => {
   return function decorator<T>(target: T): T {
     let type: {new (): T};

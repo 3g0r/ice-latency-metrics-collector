@@ -1,39 +1,13 @@
 ///<reference path="../custom_typings/statsd-client.d.ts"/>
 import * as Statsd from "statsd-client";
-import {
-  CommonOptions,
-  TcpOptions,
-  HttpOptions,
-  UdpOptions,
-} from "statsd-client";
 
 import {Logger, defaultLogger} from "./logger";
 
-export type StatsdClientOptions =
-  CommonOptions & (TcpOptions | UdpOptions | HttpOptions);
-export type StatsdClient = Statsd
-
-export interface LatencyConfig {
+export interface LatencyCollectorConfig {
   isEnabled: boolean;
-  client: StatsdClientOptions;
+  client: Statsd | null;
   logger?: Logger;
-}
-
-/**
- * idempotent by link to options
- */
-export const getClient = (() => {
-  const clients = new Map<StatsdClientOptions, StatsdClient>();
-
-  return (options: StatsdClientOptions): StatsdClient => {
-    if (clients.has(options)) {
-      return clients.get(options)!;
-    }
-    const client = new Statsd(options);
-    clients.set(options, client);
-    return client;
-  };
-})();
+};
 
 export type F0<R> = () => R;
 export type F1<P, R> = (p: P) => R;
@@ -48,7 +22,7 @@ export type F7<P, P1, P2, P3, P4, P5, P6, R> =
   (p: P, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6) => R;
 
 const collectLatency = ([clientConfig, logger, metricName, timer]: any[]) => {
-  getClient(clientConfig)
+  clientConfig.client
     .timing(metricName, timer);
   logger.trace({
     timer,
@@ -57,7 +31,7 @@ const collectLatency = ([clientConfig, logger, metricName, timer]: any[]) => {
 };
 
 export const functionWithLatencyMetrics = (
-  config: LatencyConfig,
+  config: LatencyCollectorConfig,
   metricName?: string,
 ) => {
   function decorator<R>(

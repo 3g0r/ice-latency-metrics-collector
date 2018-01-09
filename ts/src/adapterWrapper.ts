@@ -1,10 +1,10 @@
 import {Ice} from 'ice';
-import {LatencyConfig} from './functionWrapper';
+import {LatencyCollectorConfig} from './functionWrapper';
 import {servantWithLatencyMetrics} from './servantWrapper';
 import {defaultLogger} from './logger';
 
 export const adapterWithLatencyMetrics = (
-  config: LatencyConfig,
+  config: LatencyCollectorConfig,
   adapter: Ice.ObjectAdapter,
 ): Ice.ObjectAdapter => {
   

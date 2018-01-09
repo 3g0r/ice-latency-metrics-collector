@@ -2,7 +2,7 @@ import {defaultLogger} from "./logger";
 import {
   F0, F1, F2, F3, F4, F5, F6, F7,
   functionWithLatencyMetrics,
-  LatencyConfig,
+  LatencyCollectorConfig,
 } from "./functionWrapper";
 
 export interface Prototype {
@@ -22,7 +22,7 @@ export interface MetricOptions {
 };
 
 export const operationWithLatencyMetrics = (
-  config: LatencyConfig,
+  config: LatencyCollectorConfig,
   metricName?: string,
 ) => {
   function decorator<R>(
