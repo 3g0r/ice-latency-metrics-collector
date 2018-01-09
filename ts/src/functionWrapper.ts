@@ -4,8 +4,7 @@ import * as Statsd from "statsd-client";
 import {Logger, defaultLogger} from "./logger";
 
 export interface LatencyCollectorConfig {
-  isEnabled: boolean;
-  client: Statsd | null;
+  client: Statsd;
   logger?: Logger;
 };
 
@@ -75,10 +74,6 @@ export const functionWithLatencyMetrics = (
 
     function wrapped (...args: any[]): any {
       logger.trace('Started');
-      if (config.isEnabled === false) {
-        logger.trace('Statsd disabled');
-        return target.apply(this, args);
-      }
       const timer = new Date();
       const result = target.apply(this, args);
       Promise
