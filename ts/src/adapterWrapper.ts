@@ -1,4 +1,5 @@
 import {Ice} from 'ice';
+import * as Statsd from 'statsd-client';
 import {LatencyCollectorConfig} from './functionWrapper';
 import {servantWithLatencyMetrics} from './servantWrapper';
 import {defaultLogger} from './logger';
@@ -7,6 +8,9 @@ export const adapterWithLatencyMetrics = (
   config: LatencyCollectorConfig,
   adapter: Ice.ObjectAdapter,
 ): Ice.ObjectAdapter => {
+  if (config instanceof Statsd) {
+    config = {client: config};
+  }
   
   const logger = config.logger
       ? config.logger

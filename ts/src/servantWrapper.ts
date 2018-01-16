@@ -1,3 +1,5 @@
+import * as Statsd from 'statsd-client';
+
 import {defaultLogger} from "./logger";
 import {LatencyCollectorConfig} from "./functionWrapper";
 import {operationWithLatencyMetrics} from "./operationWrapper";
@@ -41,6 +43,10 @@ export const servantWithLatencyMetrics = (
     } else {
       type = target.constructor as {new (): T};
       prototype = Object.getPrototypeOf(target);
+    }
+
+    if (config instanceof Statsd) {
+      config = {client: config};
     }
     
     const logger = (config.logger

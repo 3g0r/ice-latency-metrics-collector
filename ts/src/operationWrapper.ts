@@ -1,3 +1,5 @@
+import * as Statsd from 'statsd-client';
+
 import {defaultLogger} from "./logger";
 import {
   F0, F1, F2, F3, F4, F5, F6, F7,
@@ -71,6 +73,9 @@ export const operationWithLatencyMetrics = (
     operationName: string,
     descriptor: ParameterizedPropertyDescriptor<Function>,
   ): ParameterizedPropertyDescriptor<Function> {
+    if (config instanceof Statsd) {
+      config = {client: config};
+    }
     const logger = (config.logger
       ? config.logger
       : defaultLogger

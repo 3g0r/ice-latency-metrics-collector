@@ -1,6 +1,6 @@
 {
   "name": "ice-latency-metrics-collector",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "ZeroC ICE nodejs latency collector",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -24,6 +24,7 @@
   "author": "Egor Nikolaev <eg0r.n1k0l43v@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@types/statsd-client": "^0.4.0",
     "statsd-client": "^0.4.0"
   },
   "devDependencies": {

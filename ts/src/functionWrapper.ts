@@ -1,12 +1,11 @@
-///<reference path="../custom_typings/statsd-client.d.ts"/>
 import * as Statsd from "statsd-client";
 
 import {Logger, defaultLogger} from "./logger";
 
-export interface LatencyCollectorConfig {
+export type LatencyCollectorConfig = {
   client: Statsd;
   logger?: Logger;
-};
+} | Statsd;
 
 export type F0<R> = () => R;
 export type F1<P, R> = (p: P) => R;
@@ -58,10 +57,14 @@ export const functionWithLatencyMetrics = (
     target: F7<P, P1, P2, P3, P4, P5, P6, R>,
   ): F7<P, P1, P2, P3, P4, P5, P6, R>;
   function decorator(target: Function) {
+    if (config instanceof Statsd) {
+      config = {client: config};
+    }    
     const logger = (config.logger
       ? config.logger
       : defaultLogger
     ).child({metricName});
+    const {client} = config;
 
     if (typeof target !== 'function') {
       const message = 'Decoration target is not a function';
@@ -77,7 +80,7 @@ export const functionWithLatencyMetrics = (
       const timer = new Date();
       const result = target.apply(this, args);
       Promise
-        .all([config.client, logger, metricName, timer, result])
+        .all([client, logger, metricName, timer, result])
         .then(collectLatency)
         .catch(collectLatency);
       return result;
