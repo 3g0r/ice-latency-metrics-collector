@@ -80,9 +80,11 @@ export const functionWithLatencyMetrics = (
       const timer = new Date();
       const result = target.apply(this, args);
       Promise
-        .all([client, logger, metricName, timer, result])
-        .then(collectLatency)
-        .catch(collectLatency);
+        .all([client, logger, metricName, timer,
+            Promise
+                .resolve(result)
+                .catch(error => error)])
+        .then(collectLatency);
       return result;
     };
 
