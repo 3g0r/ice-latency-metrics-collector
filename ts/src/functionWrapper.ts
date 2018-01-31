@@ -64,7 +64,6 @@ export const functionWithLatencyMetrics = (
       ? config.logger
       : defaultLogger
     ).child({metricName});
-    const {client} = config;
 
     if (typeof target !== 'function') {
       const message = 'Decoration target is not a function';
@@ -80,7 +79,7 @@ export const functionWithLatencyMetrics = (
       const timer = new Date();
       const result = target.apply(this, args);
       Promise
-        .all([client, logger, metricName, timer,
+        .all([config, logger, metricName, timer,
             Promise
                 .resolve(result)
                 .catch(error => error)])
