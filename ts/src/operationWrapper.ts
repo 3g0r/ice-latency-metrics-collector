@@ -94,7 +94,7 @@ export const operationWithLatencyMetrics = (
           ...config,
           logger,
         },
-        `${prototype.constructor.name}.${metricName || operationName}`,
+        `latency.${prototype.constructor.name}.${metricName || operationName}`,
       )(descriptor.value as any),
     };
 

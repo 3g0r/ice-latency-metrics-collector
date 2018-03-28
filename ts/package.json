@@ -1,6 +1,6 @@
 {
   "name": "ice-latency-metrics-collector",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "ZeroC ICE nodejs latency collector",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

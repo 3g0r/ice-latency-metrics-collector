@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
     name='ice-latency-metrics-collector',
     packages=['ice_latency_metrics_collector'],
-    version='0.1.0-alpha.9',
+    version='0.1.0',
     description='ZerocIce latency metrics collector',
     author='3g0r',
     author_email='eg0r.n1k0l43v@gmail.com',

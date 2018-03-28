@@ -40,7 +40,7 @@ def with_latency_metrics(cls, statsd_config: Dict[str, Any]):
             finally:
                 elapsed_time_ms = (MILLISECONDS_IN_SECOND *
                                    (time.time() - start_time))
-                statsd.timing(method.__name__, elapsed_time_ms)
+                statsd.timing('latency.' + method.__name__, elapsed_time_ms)
             return result
 
         return wrapped
