@@ -20,12 +20,8 @@ export type F7<P, P1, P2, P3, P4, P5, P6, R> =
   (p: P, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6) => R;
 
 const collectLatency = ([clientConfig, logger, metricName, timer]: any[]) => {
-  clientConfig.client
-    .timing(metricName, timer);
-  logger.trace({
-    timer,
-    statsdConfiguration: clientConfig,
-  }, 'Send timing to statsd');
+  clientConfig.client.timing(metricName, timer);
+  logger.trace({timer}, 'Send timing to statsd');
 };
 
 export const functionWithLatencyMetrics = (
