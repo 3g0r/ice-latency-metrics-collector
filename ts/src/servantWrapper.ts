@@ -3,6 +3,7 @@ import * as Statsd from 'statsd-client';
 import {defaultLogger} from "./logger";
 import {LatencyCollectorConfig} from "./functionWrapper";
 import {operationWithLatencyMetrics} from "./operationWrapper";
+import {randomId} from "./randomId";
 
 function getOpTable(servantType: any) {
   return {[Symbol.iterator]: function* getOpTable() {
@@ -31,6 +32,8 @@ function getOpTableFromInterfaces(interfaces: any[]) {
   return ops;
 }
 
+const isWrappedTypeKey = Symbol(randomId());
+
 export const servantWithLatencyMetrics = (
   config: LatencyCollectorConfig,
 ) => {
@@ -38,11 +41,15 @@ export const servantWithLatencyMetrics = (
     let type: {new (): T};
     let prototype: Object;
     if (typeof target === 'function') {
-      type = target;
+      type = target as any;
       prototype = (target as any).prototype;
     } else {
       type = target.constructor as {new (): T};
       prototype = Object.getPrototypeOf(target);
+    }
+
+    if ((type as any)[isWrappedTypeKey]) {
+      return target;
     }
 
     if (config instanceof Statsd) {
@@ -73,8 +80,14 @@ export const servantWithLatencyMetrics = (
           'Not found in prototype');
         continue;
       }
-      opDecorator(prototype, methodName, descriptor);
+      Object.defineProperty(
+        prototype,
+        methodName,
+        opDecorator(prototype, methodName, descriptor)
+        ,
+      );
     }
+    (type as any)[isWrappedTypeKey] = true;
     return target;
   };
 };

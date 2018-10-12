@@ -1,5 +1,6 @@
 import * as Statsd from "statsd-client";
 
+import {randomId} from "./randomId";
 import {Logger, defaultLogger} from "./logger";
 
 export type LatencyCollectorConfig = {
@@ -23,6 +24,8 @@ const collectLatency = ([clientConfig, logger, metricName, timer]: any[]) => {
   clientConfig.client.timing(metricName, timer);
   logger.trace({timer}, 'Send timing to statsd');
 };
+
+const isWrappedFunctionKey = Symbol(randomId());
 
 export const functionWithLatencyMetrics = (
   config: LatencyCollectorConfig,
@@ -53,6 +56,9 @@ export const functionWithLatencyMetrics = (
     target: F7<P, P1, P2, P3, P4, P5, P6, R>,
   ): F7<P, P1, P2, P3, P4, P5, P6, R>;
   function decorator(target: Function) {
+    if ((target as any)[isWrappedFunctionKey]) {
+      return target;
+    }
     if (config instanceof Statsd) {
       config = {client: config};
     }    
@@ -68,8 +74,6 @@ export const functionWithLatencyMetrics = (
     }
     metricName = metricName || target.name;
 
-    logger.trace('Decorate function');
-
     function wrapped (...args: any[]): any {
       logger.trace('Started');
       const timer = new Date();
@@ -82,7 +86,8 @@ export const functionWithLatencyMetrics = (
         .then(collectLatency);
       return result;
     };
-
+    
+    (wrapped as any)[isWrappedFunctionKey] = true;
     return wrapped;
   }
   return decorator;

@@ -6,6 +6,7 @@ import {
   functionWithLatencyMetrics,
   LatencyCollectorConfig,
 } from "./functionWrapper";
+import {randomId} from "./randomId";
 
 export interface Prototype {
   constructor: {
@@ -22,6 +23,8 @@ export interface MetricOptions {
   name?: string;
   useClassNameAsPrefix?: boolean;
 };
+
+const isWrappedOperationKey = Symbol(randomId());
 
 export const operationWithLatencyMetrics = (
   config: LatencyCollectorConfig,
@@ -73,6 +76,10 @@ export const operationWithLatencyMetrics = (
     operationName: string,
     descriptor: ParameterizedPropertyDescriptor<Function>,
   ): ParameterizedPropertyDescriptor<Function> {
+    if ((descriptor.value as any)[isWrappedOperationKey]) {
+      return descriptor;
+    }
+
     if (config instanceof Statsd) {
       config = {client: config};
     }
@@ -103,6 +110,7 @@ export const operationWithLatencyMetrics = (
       operationName,
       decorated,
     );
+    (descriptor.value as any)[isWrappedOperationKey] = true;
     return decorated;
   }
   return decorator;

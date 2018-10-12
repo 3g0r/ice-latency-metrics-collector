@@ -3,6 +3,9 @@ import * as Statsd from 'statsd-client';
 import {LatencyCollectorConfig} from './functionWrapper';
 import {servantWithLatencyMetrics} from './servantWrapper';
 import {defaultLogger} from './logger';
+import {randomId} from "./randomId";
+
+const isWrappedAdapterKey = Symbol(randomId());
 
 export const adapterWithLatencyMetrics = (
   config: LatencyCollectorConfig,
@@ -11,11 +14,16 @@ export const adapterWithLatencyMetrics = (
   if (config instanceof Statsd) {
     config = {client: config};
   }
-  
+
   const logger = config.logger
-      ? config.logger
-      : defaultLogger;
-  const servantDecorator = servantWithLatencyMetrics(config);
+    ? config.logger
+    : defaultLogger;
+    
+  if ((adapter as any)[isWrappedAdapterKey]) {
+    return adapter;
+  }
+  
+  const servantDecorator = servantWithLatencyMetrics({...config, logger});
   const originAdd = adapter.addFacet;
   logger.trace('Wrap adapter.addFacet');
   adapter.addFacet = function addFacet (
@@ -34,5 +42,6 @@ export const adapterWithLatencyMetrics = (
   ): void {
     originAddDefaultServant.call(this, servantDecorator(servant), category);
   };
+  (adapter as any)[isWrappedAdapterKey] = true;
   return adapter;
 };
